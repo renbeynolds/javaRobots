@@ -109,6 +109,7 @@ public class Board {
     public int getHeight() { return _height; }
     public Position getRobotPosition(char id) { return _robots.get(id); }
     public Map<Character, Position> getRobots() { return _robots; }
+    public Space getSpace(Position p) { return _spaces[p.x][p.y]; }
 
     public int getConfig() {
         int config = 0;
