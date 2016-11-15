@@ -66,7 +66,7 @@ public class Board {
     
     public Position moveRobot(char id, char dir) {
         Position p = _robots.get(id);
-        Position old_p = p;
+        Position old_p = new Position(p);
         _spaces[p.x][p.y].clearOccupant();
         while(!_spaces[p.x][p.y].hasWall(dir)) {
             switch (dir) {
@@ -109,6 +109,7 @@ public class Board {
     public int getHeight() { return _height; }
     public Position getRobotPosition(char id) { return _robots.get(id); }
     public Map<Character, Position> getRobots() { return _robots; }
+    public Map<Character, Position> getGoals() { return _goals; }
     public Space getSpace(Position p) { return _spaces[p.x][p.y]; }
 
     public int getConfig() {

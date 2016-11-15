@@ -3,6 +3,7 @@ package ricochetRobots;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Map;
 
 import java.awt.*;
 import javax.swing.*;
@@ -25,6 +26,7 @@ public class Solver {
                 RenderingHints.VALUE_ANTIALIAS_ON);
             drawGrid(g2);
             drawWalls(g2);
+            drawGoals(g2);
             drawRobots(g2);
         }
         
@@ -66,6 +68,20 @@ public class Solver {
             }
         }
         
+        private void drawGoals(Graphics2D g2) {
+            for(Map.Entry<Character, Position> goal: _board.getGoals().entrySet()) {
+                Position p = goal.getValue();
+                switch(goal.getKey()) {
+                    case 'R': g2.setPaint(Color.RED); break;
+                    case 'G': g2.setPaint(Color.GREEN); break;
+                    case 'B': g2.setPaint(Color.BLUE); break;
+                    case 'Y': g2.setPaint(Color.YELLOW); break;
+                }
+                g2.drawRect(_xoffset+5+30*p.x, _yoffset+5+30*p.y, 20, 20);
+                g2.fillRect(_xoffset+5+30*p.x, _yoffset+5+30*p.y, 20, 20);
+            }
+        }
+        
         private void drawRobots(Graphics2D g2) {
             for(char bot_id: _board.getRobotIds()) {
                 Position p = _board.getRobotPosition(bot_id);
@@ -75,8 +91,10 @@ public class Solver {
                     case 'B': g2.setPaint(Color.BLUE); break;
                     case 'Y': g2.setPaint(Color.YELLOW); break;
                 }
-                g2.drawOval(_xoffset+5+30*p.x, _yoffset+5+30*p.y, 20, 20);
                 g2.fillOval(_xoffset+5+30*p.x, _yoffset+5+30*p.y, 20, 20);
+                g2.setStroke(new BasicStroke(1));
+                g2.setPaint(Color.BLACK);
+                g2.drawOval(_xoffset+5+30*p.x, _yoffset+5+30*p.y, 20, 20);
             }
         }
         
@@ -101,12 +119,6 @@ public class Solver {
             for(char bot_id: board.getRobotIds()) {
                 for(char dir: new char[] {'N', 'S', 'E', 'W'}) {
                     Position p = board.moveRobot(bot_id, dir);
-                    map.repaint();
-                    try{
-                        Thread.sleep(1500);
-                    }catch(InterruptedException e){
-                        System.out.println("got interrupted!");
-                    }
                     if(board.solved()){ break; }
                     int new_config = board.getConfig();
                     if(!prev_configs.contains(new_config)) {
