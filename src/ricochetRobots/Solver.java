@@ -1,9 +1,11 @@
 package ricochetRobots;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.ArrayList;
 
 import java.awt.*;
 import javax.swing.*;
@@ -33,6 +35,18 @@ public class Solver {
         @Override
         public Dimension getPreferredSize() {
             return new Dimension(500, 500);
+        }
+        
+        public void showSolution(ArrayList<Integer> steps) {
+            for(int config: steps) {
+                _board.setConfig(config);
+                this.repaint();
+                try {
+                    Thread.sleep(1000);
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
         
         private void drawGrid(Graphics2D g2) {
@@ -83,7 +97,7 @@ public class Solver {
         }
         
         private void drawRobots(Graphics2D g2) {
-            for(char bot_id: _board.getRobotIds()) {
+            for(char bot_id: _board.getRobots().keySet()) {
                 Position p = _board.getRobotPosition(bot_id);
                 switch(bot_id) {
                     case 'R': g2.setPaint(Color.RED); break;
@@ -105,31 +119,46 @@ public class Solver {
     }
     
     
-    public static void solve(Board board, MapDraw map) {
+    public static ArrayList<Integer> solve(Board board) {
 
-        HashSet<Integer>prev_configs = new HashSet<Integer>();
+        HashSet<Integer> prev_configs = new HashSet<Integer>();
+        Map<Integer, Integer> steps = new HashMap<Integer, Integer>();
         Queue<Integer> configs_queue = new LinkedList<Integer>();
         configs_queue.add(board.getConfig());
+        int prev_config = 0;
+        int initial_config = board.getConfig();
 
         while(!board.solved() && !configs_queue.isEmpty()) {
             
-            int prev_config = configs_queue.poll();
+            prev_config = configs_queue.poll();
             board.setConfig(prev_config);
 
-            for(char bot_id: board.getRobotIds()) {
+            for(char bot_id: board.getRobots().keySet()) {
                 for(char dir: new char[] {'N', 'S', 'E', 'W'}) {
+
                     Position p = board.moveRobot(bot_id, dir);
-                    if(board.solved()){ break; }
+                    if(board.solved()) { break; }
                     int new_config = board.getConfig();
                     if(!prev_configs.contains(new_config)) {
                         prev_configs.add(new_config); 
                         configs_queue.add(new_config);
+                        steps.put(new_config, prev_config);
                     }
                     board.setRobotPosition(bot_id, p);
+
                 }
             }
 
         }
+
+        ArrayList<Integer> configs = new ArrayList<Integer>();
+        configs.add(board.getConfig());
+        while(prev_config != initial_config) {
+            configs.add(0, prev_config);
+            prev_config = steps.get(prev_config);
+        }
+        configs.add(0, initial_config);
+        return configs;
 
     }
     
@@ -137,14 +166,18 @@ public class Solver {
         
         Solver mySolver = new Solver();
         
-        Board myBoard = new Board(8, 8);
+        Board myBoard = new Board(4, 4);
         myBoard.addPerimeterWalls();
         myBoard.addWall('E', new Position(0,0));
-        myBoard.addWall('E', new Position(0, 1));
+
         myBoard.addRobot('R', new Position(0, 0));
-        myBoard.addGoal('R', new Position(7, 7));
-        // System.out.println(myBoard);
+        myBoard.addGoal('R', new Position(1, 3));
+
+        myBoard.addRobot('G', new Position(0, 1));
+        myBoard.addGoal('G', new Position(1, 0));
         
+        ArrayList<Integer> steps = solve(myBoard);
+
         JFrame window = new JFrame("CONTENT");
         window.setSize(500, 500);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -153,7 +186,7 @@ public class Solver {
         window.add(map);
         window.setVisible(true);
 
-        solve(myBoard, map);
+        map.showSolution(steps);
 
     }
     

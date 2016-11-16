@@ -1,7 +1,6 @@
 package ricochetRobots;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Iterator;
 
 public class Board {
@@ -16,8 +15,8 @@ public class Board {
                 _spaces[i][j] = new Space();
             }
         }
-        _robots = new HashMap<Character, Position>();
-        _goals = new HashMap<Character, Position>();
+        _robots = new TreeMap<Character, Position>();
+        _goals = new TreeMap<Character, Position>();
 
     }
     
@@ -68,7 +67,7 @@ public class Board {
         Position p = _robots.get(id);
         Position old_p = new Position(p);
         _spaces[p.x][p.y].clearOccupant();
-        while(!_spaces[p.x][p.y].hasWall(dir)) {
+        while(!_spaces[p.x][p.y].hasWall(dir) && !getSpace(dir, p).isOccupied()) {
             switch (dir) {
                 case 'N': p.y -= 1; break;
                 case 'S': p.y += 1; break; 
@@ -83,16 +82,11 @@ public class Board {
     
     public void setConfig(int config) {
         int shift = 24; 
-        Iterator<Map.Entry<Character, Position>> it = _robots.entrySet().iterator();
-        while(it.hasNext()) {
-            Map.Entry<Character, Position> pair = (Map.Entry<Character, Position>)it.next();
-            Position p = pair.getValue();
-            _spaces[p.x][p.y].clearOccupant();
-            int pos = config >> shift;
+        for(char bot_id : _robots.keySet()) {
+            int pos = (config >> shift) & 0xFF;
             int x = pos >> 4;
             int y = pos & 0x0F;
-            pair.setValue(new Position(x, y));
-            _spaces[x][y].setOccupant(pair.getKey());
+            setRobotPosition(bot_id, new Position(x, y));
             shift -= 8;
         }
     }
@@ -111,14 +105,21 @@ public class Board {
     public Map<Character, Position> getRobots() { return _robots; }
     public Map<Character, Position> getGoals() { return _goals; }
     public Space getSpace(Position p) { return _spaces[p.x][p.y]; }
+    
+    public Space getSpace(char dir, Position p) {
+        switch(dir) {
+            case 'N': return _spaces[p.x][p.y-1];
+            case 'S': return _spaces[p.x][p.y+1];
+            case 'E': return _spaces[p.x+1][p.y];
+            case 'W': return _spaces[p.x-1][p.y];
+        }
+        return null;
+    }
 
     public int getConfig() {
         int config = 0;
         int shift = 24;
-        Iterator<Map.Entry<Character, Position>> it = _robots.entrySet().iterator();
-        while(it.hasNext()) {
-            Map.Entry<Character, Position> pair = (Map.Entry<Character, Position>)it.next();
-            Position p = pair.getValue();
+        for(Position p : _robots.values()) {
             int pos = (p.x << 4) | p.y;
             config = config | (pos << shift);
             shift -= 8;
@@ -136,16 +137,6 @@ public class Board {
             }
         }
         return true;
-    }
-    
-    public ArrayList<Character> getRobotIds() {
-        Iterator<Map.Entry<Character, Position>> it = _robots.entrySet().iterator();
-        ArrayList<Character> ans = new ArrayList<Character>();
-        while(it.hasNext()) {
-            Map.Entry<Character, Position> pair = (Map.Entry<Character, Position>)it.next();
-            ans.add(pair.getKey());
-        }
-        return ans;
     }
     
     @Override
