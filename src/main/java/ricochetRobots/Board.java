@@ -152,7 +152,7 @@ public class Board {
                     char bot_id = _spaces[i][j].getOccupant();
                     s += _spaces[i][j].getWallWest()?("| "+bot_id+" "):("  "+bot_id+" ");
                 } else if(_spaces[i][j].isGoal()){
-                    String goal_id = String.valueOf(_spaces[i][j].getGoal()).toLowerCase();
+                    String goal_id = String.valueOf(_spaces[i][j].getGoal()).toLowerCase(Locale.ENGLISH);
                     s += _spaces[i][j].getWallWest()?("| "+goal_id+" "):("  "+goal_id+" ");
                 } else {
                     s += _spaces[i][j].getWallWest()?("|   "):("    ");

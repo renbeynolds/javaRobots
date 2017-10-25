@@ -113,8 +113,8 @@ public class Solver {
         }
         
         private Board _board;
-        int _xoffset;
-        int _yoffset;
+        private int _xoffset;
+        private int _yoffset;
         
     }
     
