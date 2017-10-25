@@ -9,7 +9,8 @@ import org.junit.Test;
 
 public class TestPosition {
 
-    private Position p;
+    private Position p1;
+    private Position p2;
 
     @Before
     public void setUp() throws Exception {
